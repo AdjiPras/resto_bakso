@@ -1,0 +1,27 @@
+from django.db import models
+
+class MenuBakso(models.Model):
+    nama = models.CharField(max_length=100)
+    deskripsi = models.TextField()
+    harga = models.DecimalField(max_digits=10, decimal_places=2)
+    tersedia = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.nama
+
+class Pemesanan(models.Model):
+    nama_pelanggan = models.CharField(max_length=100, blank=True)
+    nomor_meja = models.CharField(max_length=10)
+    tanggal_pesan = models.DateTimeField(auto_now_add=True)
+    sudah_dibayar = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Pesanan Meja {self.nomor_meja} - {self.nama_pelanggan or 'Anonim'}"
+
+class ItemPesanan(models.Model):
+    pemesanan = models.ForeignKey(Pemesanan, on_delete=models.CASCADE, related_name='item_pesanan')
+    menu = models.ForeignKey(MenuBakso, on_delete=models.CASCADE)
+    jumlah = models.PositiveIntegerField()
+    
+    def subtotal(self):
+        return self.menu.harga * self.jumlah

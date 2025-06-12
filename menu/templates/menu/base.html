@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>RESTO BAKSO</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">RESTO BAKSO</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResto" aria-controls="navbarResto" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarResto">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+        <!-- MENU -->
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'daftar_menu' %}">Menu</a>
+        </li>
+
+        <!-- PEMESANAN -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="pemesananDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Pemesanan
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="pemesananDropdown">
+            <li><a class="dropdown-item" href="{% url 'daftar_pemesanan' %}">Daftar Pemesanan</a></li>
+            <li><a class="dropdown-item" href="{% url 'tambah_pemesanan' %}">Tambah Pemesanan</a></li>
+          </ul>
+        </li>
+
+        <!-- KASIR -->
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'kasir_view' %}">Kasir</a>
+        </li>
+
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  {% block content %}
+  {% endblock %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

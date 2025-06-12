@@ -1,0 +1,23 @@
+{% extends 'menu/base.html' %}
+{% block content %}
+<h2>{{ title }}</h2>
+<form method="post">
+    {% csrf_token %}
+    <p>
+        Nama Pelanggan: <input type="text" name="nama_pelanggan" value="{{ nama_pelanggan }}">
+    </p>
+    <p>
+        Nomor Meja: <input type="text" name="nomor_meja" value="{{ nomor_meja }}">
+    </p>
+    <h3>Daftar Menu:</h3>
+    {% for menu in menu_list %}
+        <p>
+            <input type="number" name="menu_{{ menu.id }}" placeholder="Jumlah"
+                   value="0" min="0">
+            {{ menu.nama }} (Rp {{ menu.harga }})
+        </p>
+    {% endfor %}
+    <button type="submit">Simpan Pesanan</button>
+</form>
+<a href="{% url 'daftar_pemesanan' %}">Kembali</a>
+{% endblock %}

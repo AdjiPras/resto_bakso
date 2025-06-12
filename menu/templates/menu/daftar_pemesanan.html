@@ -1,0 +1,25 @@
+{% extends 'menu/base.html' %}
+{% block content %}
+<h1>Daftar Pemesanan</h1>
+<a href="{% url 'tambah_pemesanan' %}">+ Tambah Pemesanan</a>
+<table border="1">
+    <tr>
+        <th>Nomor Meja</th>
+        <th>Nama Pelanggan</th>
+        <th>Tanggal</th>
+        <th>Status</th>
+        <th>Aksi</th>
+    </tr>
+    {% for p in pemesanan_list %}
+    <tr>
+        <td>{{ p.nomor_meja }}</td>
+        <td>{{ p.nama_pelanggan }}</td>
+        <td>{{ p.tanggal_pesan }}</td>
+        <td>{{ p.sudah_dibayar|yesno:"Sudah Dibayar,Belum Dibayar" }}</td>
+        <td>
+            <a href="{% url 'detail_pemesanan' p.id %}">Detail</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'menu/base.html' %}
+{% block content %}
+<h2>Detail Pemesanan</h2>
+<p>Meja: {{ pesanan.nomor_meja }}</p>
+<p>Nama: {{ pesanan.nama_pelanggan }}</p>
+<p>Status: {{ pesanan.sudah_dibayar|yesno:"Sudah Dibayar,Belum Dibayar" }}</p>
+
+<h3>Item Pesanan:</h3>
+<table border="1">
+    <tr>
+        <th>Menu</th><th>Harga</th><th>Jumlah</th><th>Subtotal</th>
+    </tr>
+    {% for item in pesanan.item_pesanan.all %}
+    <tr>
+        <td>{{ item.menu.nama }}</td>
+        <td>{{ item.menu.harga }}</td>
+        <td>{{ item.jumlah }}</td>
+        <td>{{ item.subtotal }}</td>
+    </tr>
+    {% endfor %}
+</table>
+<p><strong>Total: Rp {{ total_harga }}</strong></p>
+
+{% if not pesanan.sudah_dibayar %}
+    <form method="post" action="{% url 'bayar_pemesanan' pesanan.id %}">
+        {% csrf_token %}
+        <button type="submit">Bayar</button>
+    </form>
+{% endif %}
+<a href="{% url 'daftar_pemesanan' %}">Kembali</a>
+{% endblock %}

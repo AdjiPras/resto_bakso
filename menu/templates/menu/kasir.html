@@ -1,0 +1,24 @@
+{% extends 'menu/base.html' %}
+{% block content %}
+<h1>Kasir - Transaksi Belum Dibayar</h1>
+<table border="1">
+    <tr>
+        <th>Meja</th>
+        <th>Nama</th>
+        <th>Total</th>
+        <th>Aksi</th>
+    </tr>
+    {% for pesanan in pesanan_list %}
+    <tr>
+        <td>{{ pesanan.nomor_meja }}</td>
+        <td>{{ pesanan.nama_pelanggan }}</td>
+        <td>
+            Rp {{ pesanan.total }}
+        </td>
+        <td>
+            <a href="{% url 'detail_pemesanan' pesanan.id %}">Detail & Bayar</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends 'menu/base.html' %}
+{% block content %}
+
+<h3>Dashboard Pemesanan</h3>
+
+<form method="get" class="row g-3 mb-4">
+  <div class="col-md-3">
+    <select name="bulan" class="form-select">
+        <option value="">Pilih Bulan</option>
+        {% for i in bulan_list %}
+            <option value="{{ i }}" {% if bulan == i %}selected{% endif %}>{{ i }}</option>
+        {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-3">
+    <select name="tahun" class="form-select">
+        <option value="">Pilih Tahun</option>
+        {% for y in tahun_list %}
+            <option value="{{ y }}" {% if tahun == y %}selected{% endif %}>{{ y }}</option>
+        {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-3">
+    <button type="submit" class="btn btn-primary">Filter</button>
+  </div>
+</form>
+
+<h5>📊 Jumlah Pemesanan per Hari</h5>
+<canvas id="pesananChart" height="100"></canvas>
+
+<h5 class="mt-5">💰 Total Penjualan per Hari</h5>
+<canvas id="penjualanChart" height="100"></canvas>
+
+<h5 class="mt-5">🍜 Menu Terlaris</h5>
+<canvas id="menuChart" height="100"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const pesananChart = new Chart(document.getElementById('pesananChart'), {
+      type: 'bar',
+      data: {
+          labels: {{ labels_pesanan|safe }},
+          datasets: [{
+              label: 'Jumlah Pesanan',
+              data: {{ values_pesanan|safe }},
+              backgroundColor: 'rgba(75, 192, 192, 0.7)',
+              borderColor: 'rgba(75, 192, 192, 1)',
+              borderWidth: 1
+          }]
+      },
+      options: { responsive: true, scales: { y: { beginAtZero: true } } }
+  });
+
+  const penjualanChart = new Chart(document.getElementById('penjualanChart'), {
+      type: 'bar',
+      data: {
+          labels: {{ labels_penjualan|safe }},
+          datasets: [{
+              label: 'Total Penjualan (Rp)',
+              data: {{ values_penjualan|safe }},
+              backgroundColor: 'rgba(255, 159, 64, 0.7)',
+              borderColor: 'rgba(255, 159, 64, 1)',
+              borderWidth: 1
+          }]
+      },
+      options: { responsive: true, scales: { y: { beginAtZero: true } } }
+  });
+
+  const menuChart = new Chart(document.getElementById('menuChart'), {
+      type: 'pie',
+      data: {
+          labels: {{ labels_menu|safe }},
+          datasets: [{
+              label: 'Menu Terlaris',
+              data: {{ values_menu|safe }},
+              backgroundColor: [
+                  '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
+                  '#858796', '#fd7e14', '#6f42c1', '#20c997', '#0dcaf0'
+              ],
+          }]
+      },
+      options: { responsive: true }
+  });
+</script>
+
+{% endblock %}

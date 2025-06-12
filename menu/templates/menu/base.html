@@ -3,6 +3,16 @@
 <head>
   <title>RESTO BAKSO</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+    main {
+        flex: 1;
+    }
+  </style>
 </head>
 <body>
 
@@ -15,6 +25,9 @@
 
     <div class="collapse navbar-collapse" id="navbarResto">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
+        </li>
 
         <!-- MENU -->
         <li class="nav-item">
@@ -42,10 +55,17 @@
   </div>
 </nav>
 
-<div class="container">
+<main class="container mt-4">
   {% block content %}
   {% endblock %}
-</div>
+</main>
+
+<footer class="bg-dark text-white mt-5 py-4">
+  <div class="container text-center">
+    <p class="mb-1">&copy; {{ year }} RESTO BAKSO. All rights reserved.</p>
+    <small>Built with ❤️ using Django & Bootstrap</small>
+  </div>
+</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

@@ -5,6 +5,71 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .models import MenuBakso, Pemesanan, ItemPesanan
 from django.db.models import Sum
 
+from django.db.models.functions import TruncDate
+from django.db.models import Count
+import json
+from django.http import JsonResponse
+from django.db.models.functions import TruncDate
+from django.db.models import Count, Sum
+from datetime import datetime
+
+def dashboard_view(request):
+    bulan = request.GET.get('bulan')  # format: 01, 02, dst
+    tahun = request.GET.get('tahun')  # format: 2025
+
+    pesanan = Pemesanan.objects.all()
+
+    if bulan and tahun:
+        pesanan = pesanan.filter(
+            tanggal_pesan__month=int(bulan),
+            tanggal_pesan__year=int(tahun)
+        )
+
+    # Grafik 1: Jumlah Pemesanan per Tanggal
+    data_pesanan = (
+        pesanan.annotate(tanggal=TruncDate('tanggal_pesan'))
+        .values('tanggal')
+        .annotate(jumlah=Count('id'))
+        .order_by('tanggal')
+    )
+
+    # Grafik 2: Total Penjualan per Hari
+    data_penjualan = (
+        pesanan.annotate(tanggal=TruncDate('tanggal_pesan'))
+        .values('tanggal')
+        .annotate(total=Sum('item_pesanan__menu__harga'))
+        .order_by('tanggal')
+    )
+
+    # Grafik 3: Menu Terlaris
+    from .models import ItemPesanan
+    data_menu = (
+        ItemPesanan.objects.filter(pemesanan__in=pesanan)
+        .values('menu__nama')
+        .annotate(total=Sum('jumlah'))
+        .order_by('-total')
+    )
+
+    context = {
+        'labels_pesanan': [str(d['tanggal']) for d in data_pesanan],
+        'values_pesanan': [d['jumlah'] for d in data_pesanan],
+
+        'labels_penjualan': [str(d['tanggal']) for d in data_penjualan],
+        'values_penjualan': [d['total'] for d in data_penjualan],
+
+        'labels_menu': [d['menu__nama'] for d in data_menu],
+        'values_menu': [d['total'] for d in data_menu],
+
+        'bulan': bulan,
+        'tahun': tahun,
+
+        'bulan_list': ['01','02','03','04','05','06','07','08','09','10','11','12'],
+        'tahun_list': ['2023', '2024', '2025'],
+    }
+
+    return render(request, 'menu/dashboard.html', context)
+
+
 def daftar_menu(request):
     menus = MenuBakso.objects.all()
     return render(request, 'menu/daftar_menu.html', {'menus': menus})

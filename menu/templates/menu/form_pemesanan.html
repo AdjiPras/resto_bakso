@@ -1,6 +1,7 @@
 {% extends 'menu/base.html' %}
 {% block content %}
 <h2>{{ title }}</h2>
+
 <form method="post">
     {% csrf_token %}
     <p>
@@ -9,6 +10,12 @@
     <p>
         Nomor Meja: <input type="text" name="nomor_meja" value="{{ nomor_meja }}">
     </p>
+
+    <p>
+        <label for="keterangan_pesanan">Keterangan / Menu Tambahan:</label><br>
+        <textarea name="keterangan_pesanan" id="keterangan_pesanan" rows="4" cols="50" placeholder="Contoh: Tambah kerupuk, tanpa sambal">{{ keterangan_pesanan }}</textarea>
+    </p>
+
     <h3>Daftar Menu:</h3>
     {% for menu in menu_list %}
         <p>
@@ -17,7 +24,9 @@
             {{ menu.nama }} (Rp {{ menu.harga }})
         </p>
     {% endfor %}
+
     <button type="submit">Simpan Pesanan</button>
 </form>
+
 <a href="{% url 'daftar_pemesanan' %}">Kembali</a>
 {% endblock %}

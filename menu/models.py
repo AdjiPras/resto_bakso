@@ -14,6 +14,7 @@ class Pemesanan(models.Model):
     nomor_meja = models.CharField(max_length=10)
     tanggal_pesan = models.DateTimeField(auto_now_add=True)
     sudah_dibayar = models.BooleanField(default=False)
+    keterangan_pesanan = models.TextField(blank=True, null=True) 
 
     def __str__(self):
         return f"Pesanan Meja {self.nomor_meja} - {self.nama_pelanggan or 'Anonim'}"

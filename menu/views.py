@@ -110,10 +110,12 @@ def tambah_pemesanan(request):
     if request.method == 'POST':
         nama_pelanggan = request.POST.get('nama_pelanggan', '')
         nomor_meja = request.POST.get('nomor_meja')
+        keterangan = request.POST.get('keterangan_pesanan', '')  # ✅ ambil isi textarea
 
         pesanan = Pemesanan.objects.create(
             nama_pelanggan=nama_pelanggan,
-            nomor_meja=nomor_meja
+            nomor_meja=nomor_meja,
+            keterangan_pesanan=keterangan  # ✅ simpan ke database
         )
 
         for menu in menu_list:
@@ -132,7 +134,9 @@ def tambah_pemesanan(request):
         'title': 'Tambah Pesanan',
         'nama_pelanggan': '',
         'nomor_meja': '',
+        'keterangan_pesanan': '',  # ✅ untuk isi awal textarea
     })
+
 
 # Detail pesanan + tombol bayar
 def detail_pemesanan(request, pesanan_id):

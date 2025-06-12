@@ -16,6 +16,9 @@ urlpatterns = [
     path('pemesanan/<int:pesanan_id>/', views.detail_pemesanan, name='detail_pemesanan'),
     path('pemesanan/<int:pesanan_id>/bayar/', views.bayar_pemesanan, name='bayar_pemesanan'),
 
+    # Dapur
+    path('dapur/', views.dapur_view, name='dapur_view'),
+
     # Kasir
     path('kasir/', views.kasir_view, name='kasir_view'),
 ]

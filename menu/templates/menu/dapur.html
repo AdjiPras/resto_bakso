@@ -1,0 +1,63 @@
+{% extends 'menu/base.html' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="card my-4">
+        <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+          <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
+            <h6 class="text-white text-capitalize ps-3">Monitoring Dapur</h6>
+          </div>
+        </div>
+        <div class="card-body px-0 pb-2">
+          <div class="table-responsive p-0">
+            <table class="table align-items-center mb-0">
+              <thead>
+                <tr>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Waktu Pesan</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Nomor Meja</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Jumlah Item</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for pesanan in daftar_pesanan %}
+                <tr>
+                  <td>
+                    <p class="text-sm font-weight-bold mb-0">{{ pesanan.waktu_pesan|date:"d M Y H:i" }}</p>
+                  </td>
+                  <td>
+                    <p class="text-sm mb-0">{{ pesanan.no_meja }}</p>
+                  </td>
+                  <td>
+                    <span class="badge badge-sm 
+                      {% if pesanan.status == 'selesai' %}
+                        bg-gradient-success
+                      {% elif pesanan.status == 'proses' %}
+                        bg-gradient-warning
+                      {% else %}
+                        bg-gradient-secondary
+                      {% endif %}
+                    ">{{ pesanan.status|capfirst }}</span>
+                  </td>
+                  <td>
+                    <p class="text-sm mb-0">{{ pesanan.jumlah_item }}</p>
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="4" class="text-center py-4">
+                    <em>Belum ada pesanan di dapur.</em>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

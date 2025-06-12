@@ -2,8 +2,10 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path('', views.dashboard_view, name='dashboard'),
+
     # CRUD menu bakso
-    path('', views.daftar_menu, name='daftar_menu'),
+    path('daftar_menu/', views.daftar_menu, name='daftar_menu'),
     path('tambah/', views.tambah_menu, name='tambah_menu'),
     path('edit/<int:menu_id>/', views.edit_menu, name='edit_menu'),
     path('hapus/<int:menu_id>/', views.hapus_menu, name='hapus_menu'),

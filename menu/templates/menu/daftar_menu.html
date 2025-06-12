@@ -1,22 +1,67 @@
 {% extends 'menu/base.html' %}
 {% block content %}
-<h1>Daftar Menu Bakso</h1>
-<a href="{% url 'tambah_menu' %}">Tambah Menu</a>
-<table border="1">
-    <tr>
-        <th>Nama</th><th>Deskripsi</th><th>Harga</th><th>Tersedia</th><th>Aksi</th>
-    </tr>
-    {% for m in menus %}
-    <tr>
-        <td>{{ m.nama }}</td>
-        <td>{{ m.deskripsi }}</td>
-        <td>{{ m.harga }}</td>
-        <td>{{ m.tersedia }}</td>
-        <td>
-            <a href="{% url 'edit_menu' m.pk %}">Edit</a> |
-            <a href="{% url 'hapus_menu' m.pk %}">Hapus</a>
-        </td>
-    </tr>
-    {% endfor %}
-</table>
+<a href="{% url 'tambah_menu' %}" class="btn btn-sm btn-success" style="text-transform: capitalize;">Tambah Menu</a>
+<div class="container-fluid py-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="card my-4">
+        <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+          <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
+            <h6 class="text-white text-capitalize ps-3">Daftar Menu</h6>
+          </div>
+        </div>
+        <div class="card-body px-0 pb-2">
+          <div class="table-responsive p-0">
+            <table class="table align-items-center mb-0">
+              <thead>
+                <tr>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">No.</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Nama</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Deskripsi</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Harga</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Tersedia</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for m in menus %}
+                <tr>
+                  <td>
+                    <p class="text-sm font-weight-bold mb-0">{{ forloop.counter }}</p>
+                  </td>
+                  <td>
+                    <p class="text-sm font-weight-bold mb-0">{{ m.nama }}</p>
+                  </td>
+                  <td>
+                    <p class="text-sm mb-0">{{ m.deskripsi }}</p>
+                  </td>
+                  <td>
+                    <p class="text-sm mb-0">Rp {{ m.harga|floatformat:0 }}</p>
+                  </td>
+                  <td>
+                    {% if m.tersedia %}
+                      <span class="badge badge-sm bg-gradient-success">Tersedia</span>
+                    {% else %}
+                      <span class="badge badge-sm bg-gradient-danger">Tidak Tersedia</span>
+                    {% endif %}
+                  </td>
+                  <td class="align-middle text-center">
+                    <a href="{% url 'edit_menu' m.pk %}" class="text-secondary font-weight-bold text-xs me-2" data-toggle="tooltip" title="Edit Menu">
+                      Edit
+                    </a>
+                    |
+                    <a href="{% url 'hapus_menu' m.pk %}" class="text-danger font-weight-bold text-xs" data-toggle="tooltip" title="Hapus Menu" onclick="return confirm('Yakin ingin menghapus menu ini?')">
+                      Hapus
+                    </a>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

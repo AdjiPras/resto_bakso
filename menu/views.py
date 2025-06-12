@@ -6,16 +6,20 @@ from .models import MenuBakso, Pemesanan, ItemPesanan
 from django.db.models import Sum
 
 from django.db.models.functions import TruncDate
-from django.db.models import Count
 import json
 from django.http import JsonResponse
-from django.db.models.functions import TruncDate
 from django.db.models import Count, Sum
 from datetime import datetime
 
+
+def dapur_view(request):
+    daftar_pesanan = Pemesanan.objects.all().order_by('-id')  # contoh: ambil semua pesanan
+    context = {'daftar_pesanan': daftar_pesanan}
+    return render(request, 'menu/dapur.html', context)
+
 def dashboard_view(request):
-    bulan = request.GET.get('bulan')  # format: 01, 02, dst
-    tahun = request.GET.get('tahun')  # format: 2025
+    bulan = request.GET.get('bulan')
+    tahun = request.GET.get('tahun')
 
     pesanan = Pemesanan.objects.all()
 
@@ -24,6 +28,11 @@ def dashboard_view(request):
             tanggal_pesan__month=int(bulan),
             tanggal_pesan__year=int(tahun)
         )
+
+    # Ringkasan
+    total_pesanan = pesanan.count()
+    pesanan_proses = pesanan.filter(status='proses').count()
+    pesanan_selesai = pesanan.filter(status='selesai').count()
 
     # Grafik 1: Jumlah Pemesanan per Tanggal
     data_pesanan = (
@@ -42,7 +51,6 @@ def dashboard_view(request):
     )
 
     # Grafik 3: Menu Terlaris
-    from .models import ItemPesanan
     data_menu = (
         ItemPesanan.objects.filter(pemesanan__in=pesanan)
         .values('menu__nama')
@@ -50,24 +58,52 @@ def dashboard_view(request):
         .order_by('-total')
     )
 
+    # Monitoring Dapur
+    monitoring_dapur = (
+        pesanan
+        .values('nomor_meja', 'status')
+        .annotate(total_pesanan=Count('id'), total_item=Sum('item_pesanan__jumlah'))
+        .order_by('nomor_meja')
+    )
+
+    # ➕ Tambahan: Daftar Pesanan Terbaru (limit 10)
+    daftar_pesanan_terbaru = pesanan.order_by('-tanggal_pesan')[:10]
+
     context = {
+        # Ringkasan
+        'total_pesanan': total_pesanan,
+        'pesanan_proses': pesanan_proses,
+        'pesanan_selesai': pesanan_selesai,
+
+        # Grafik
         'labels_pesanan': [str(d['tanggal']) for d in data_pesanan],
         'values_pesanan': [d['jumlah'] for d in data_pesanan],
-
         'labels_penjualan': [str(d['tanggal']) for d in data_penjualan],
         'values_penjualan': [d['total'] for d in data_penjualan],
-
         'labels_menu': [d['menu__nama'] for d in data_menu],
         'values_menu': [d['total'] for d in data_menu],
 
+        # Monitoring Dapur
+        'monitoring_dapur': monitoring_dapur,
+
+        # ➕ Daftar Pesanan Terbaru
+        'daftar_pesanan_terbaru': daftar_pesanan_terbaru,
+
+        # Filter waktu
         'bulan': bulan,
         'tahun': tahun,
-
         'bulan_list': ['01','02','03','04','05','06','07','08','09','10','11','12'],
         'tahun_list': ['2023', '2024', '2025'],
     }
 
     return render(request, 'menu/dashboard.html', context)
+
+
+
+
+def dapur_view(request):
+    daftar_pesanan = Pemesanan.objects.all().order_by('-tanggal_pesan')
+    return render(request, 'menu/dapur.html', {'daftar_pesanan': daftar_pesanan})
 
 
 def daftar_menu(request):

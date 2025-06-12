@@ -1,7 +1,111 @@
 {% extends 'menu/base.html' %}
 {% block content %}
+{% load static %}
 
 <h3>Dashboard Pemesanan</h3>
+
+
+<div class="container-fluid py-4">
+  <div class="row">
+    <!-- Pesanan Diproses -->
+    <div class="col-xl-4 col-md-6 mb-4">
+      <div class="card">
+        <div class="card-header p-3 pt-2">
+          <div class="icon icon-lg icon-shape bg-gradient-warning shadow-warning text-center border-radius-xl mt-n4 position-absolute">
+            <i class="fa fa-spinner opacity-10" aria-hidden="true"></i>
+          </div>
+          <div class="text-end pt-1">
+            <p class="text-sm mb-0 text-capitalize">Pesanan Diproses</p>
+            <h4 class="mb-0">{{ pesanan_proses }}</h4>
+          </div>
+        </div>
+        <hr class="dark horizontal my-0">
+        <div class="card-footer p-3">
+          <p class="mb-0">Sedang dalam proses</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pesanan Selesai -->
+    <div class="col-xl-4 col-md-6 mb-4">
+      <div class="card">
+        <div class="card-header p-3 pt-2">
+          <div class="icon icon-lg icon-shape bg-gradient-success shadow-success text-center border-radius-xl mt-n4 position-absolute">
+            <i class="fa fa-check-square opacity-10" aria-hidden="true"></i>
+          </div>
+          <div class="text-end pt-1">
+            <p class="text-sm mb-0 text-capitalize">Pesanan Selesai</p>
+            <h4 class="mb-0">{{ pesanan_selesai }}</h4>
+          </div>
+        </div>
+        <hr class="dark horizontal my-0">
+        <div class="card-footer p-3">
+          <p class="mb-0">Selesai diproses</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Total Pesanan -->
+    <div class="col-xl-4 col-md-6 mb-4">
+      <div class="card">
+        <div class="card-header p-3 pt-2">
+          <div class="icon icon-lg icon-shape bg-gradient-secondary shadow-secondary text-center border-radius-xl mt-n4 position-absolute">
+            <i class="fa fa-bar-chart opacity-10" aria-hidden="true"></i>
+          </div>
+          <div class="text-end pt-1">
+            <p class="text-sm mb-0 text-capitalize">Total Pesanan</p>
+            <h4 class="mb-0">{{ total_pesanan }}</h4>
+          </div>
+        </div>
+        <hr class="dark horizontal my-0">
+        <div class="card-footer p-3">
+          <p class="mb-0">Akumulasi semua pesanan</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card my-4">
+  <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+    <div class="bg-gradient-info shadow-info border-radius-lg pt-4 pb-3">
+      <h6 class="text-white text-capitalize ps-3">Daftar Pesanan Terbaru</h6>
+    </div>
+  </div>
+  <div class="card-body px-0 pb-2">
+    <div class="table-responsive p-3">
+      <table class="table align-items-center mb-0">
+        <thead>
+          <tr>
+            <th>Waktu Pesan</th>
+            <th>Meja</th>
+            <th>Status</th>
+            <th>Jumlah Item</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for pesanan in daftar_pesanan_terbaru %}
+          <tr>
+            <td>{{ pesanan.tanggal_pesan|date:"d M Y H:i" }}</td>
+            <td>{{ pesanan.nomor_meja }}</td>
+            <td>
+              {% if pesanan.status == 'selesai' %}
+                <span class="badge bg-success">Selesai</span>
+              {% else %}
+                <span class="badge bg-warning">Proses</span>
+              {% endif %}
+            </td>
+            <td>{{ pesanan.item_pesanan.all|length }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="4" class="text-center">Belum ada pesanan.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 
 <form method="get" class="row g-3 mb-4">
   <div class="col-md-3">
@@ -25,62 +129,239 @@
   </div>
 </form>
 
-<h5>📊 Jumlah Pemesanan per Hari</h5>
-<canvas id="pesananChart" height="100"></canvas>
+<div class="row">
+  <!-- 📊 Jumlah Pemesanan per Hari -->
+  <div class="col-lg-4 col-md-6 mt-4 mb-4">
+    <div class="card z-index-2">
+      <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2 bg-transparent">
+        <div class="bg-gradient-info shadow-info border-radius-lg py-3 pe-1">
+          <div class="chart">
+            <canvas id="pesananChart" class="chart-canvas" height="170"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <h6 class="mb-0">📊 Jumlah Pemesanan per Hari</h6>
+        <p class="text-sm">Statistik harian jumlah pemesanan.</p>
+      </div>
+    </div>
+  </div>
 
-<h5 class="mt-5">💰 Total Penjualan per Hari</h5>
-<canvas id="penjualanChart" height="100"></canvas>
+  <!-- 💰 Total Penjualan per Hari -->
+  <div class="col-lg-4 col-md-6 mt-4 mb-4">
+    <div class="card z-index-2">
+      <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2 bg-transparent">
+        <div class="bg-gradient-success shadow-success border-radius-lg py-3 pe-1">
+          <div class="chart">
+            <canvas id="penjualanChart" class="chart-canvas" height="170"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <h6 class="mb-0">💰 Total Penjualan per Hari</h6>
+        <p class="text-sm">Rekap penjualan harian secara keseluruhan.</p>
+      </div>
+    </div>
+  </div>
 
-<h5 class="mt-5">🍜 Menu Terlaris</h5>
-<canvas id="menuChart" height="100"></canvas>
+  <!-- 🍜 Menu Terlaris -->
+  <div class="col-lg-4 col-md-12 mt-4 mb-4">
+    <div class="card z-index-2">
+      <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2 bg-transparent">
+        <div class="bg-gradient-warning shadow-warning border-radius-lg py-3 pe-1">
+          <div class="chart">
+            <canvas id="menuChart" class="chart-canvas" height="170"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <h6 class="mb-0">🍜 Menu Terlaris</h6>
+        <p class="text-sm">Grafik item menu yang paling banyak dipesan.</p>
+      </div>
+    </div>
+  </div>
+</div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'assets/js/plugins/chartjs.min.js' %}"></script>
 <script>
-  const pesananChart = new Chart(document.getElementById('pesananChart'), {
-      type: 'bar',
-      data: {
-          labels: {{ labels_pesanan|safe }},
-          datasets: [{
-              label: 'Jumlah Pesanan',
-              data: {{ values_pesanan|safe }},
-              backgroundColor: 'rgba(75, 192, 192, 0.7)',
-              borderColor: 'rgba(75, 192, 192, 1)',
-              borderWidth: 1
-          }]
-      },
-      options: { responsive: true, scales: { y: { beginAtZero: true } } }
+  // Chart: Jumlah Pesanan
+  var ctxPesanan = document.getElementById("pesananChart").getContext("2d");
+  new Chart(ctxPesanan, {
+    type: "bar",
+    data: {
+      labels: {{ labels_pesanan|safe }},
+      datasets: [{
+        label: "Jumlah Pesanan",
+        tension: 0.4,
+        borderWidth: 0,
+        borderRadius: 4,
+        borderSkipped: false,
+        backgroundColor: "rgba(255, 255, 255, .8)",
+        data: {{ values_pesanan|safe }},
+        maxBarThickness: 6
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      interaction: { intersect: false, mode: 'index' },
+      scales: {
+        y: {
+          grid: {
+            drawBorder: false,
+            display: true,
+            drawOnChartArea: true,
+            drawTicks: false,
+            borderDash: [5, 5],
+            color: 'rgba(255, 255, 255, .2)'
+          },
+          ticks: {
+            suggestedMin: 0,
+            beginAtZero: true,
+            padding: 10,
+            font: {
+              size: 14,
+              weight: 300,
+              family: "Roboto",
+              style: 'normal',
+              lineHeight: 2
+            },
+            color: "#fff"
+          },
+        },
+        x: {
+          grid: {
+            drawBorder: false,
+            display: true,
+            drawOnChartArea: true,
+            drawTicks: false,
+            borderDash: [5, 5],
+            color: 'rgba(255, 255, 255, .2)'
+          },
+          ticks: {
+            display: true,
+            color: '#f8f9fa',
+            padding: 10,
+            font: {
+              size: 14,
+              weight: 300,
+              family: "Roboto",
+              style: 'normal',
+              lineHeight: 2
+            },
+          }
+        }
+      }
+    }
   });
 
-  const penjualanChart = new Chart(document.getElementById('penjualanChart'), {
-      type: 'bar',
-      data: {
-          labels: {{ labels_penjualan|safe }},
-          datasets: [{
-              label: 'Total Penjualan (Rp)',
-              data: {{ values_penjualan|safe }},
-              backgroundColor: 'rgba(255, 159, 64, 0.7)',
-              borderColor: 'rgba(255, 159, 64, 1)',
-              borderWidth: 1
-          }]
-      },
-      options: { responsive: true, scales: { y: { beginAtZero: true } } }
+  // Chart: Total Penjualan
+  var ctxPenjualan = document.getElementById("penjualanChart").getContext("2d");
+  new Chart(ctxPenjualan, {
+    type: "bar",
+    data: {
+      labels: {{ labels_penjualan|safe }},
+      datasets: [{
+        label: "Total Penjualan (Rp)",
+        tension: 0.4,
+        borderWidth: 0,
+        borderRadius: 4,
+        borderSkipped: false,
+        backgroundColor: "rgba(255, 255, 255, .8)",
+        data: {{ values_penjualan|safe }},
+        maxBarThickness: 6
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      interaction: { intersect: false, mode: 'index' },
+      scales: {
+        y: {
+          grid: {
+            drawBorder: false,
+            display: true,
+            drawOnChartArea: true,
+            drawTicks: false,
+            borderDash: [5, 5],
+            color: 'rgba(255, 255, 255, .2)'
+          },
+          ticks: {
+            suggestedMin: 0,
+            beginAtZero: true,
+            padding: 10,
+            font: {
+              size: 14,
+              weight: 300,
+              family: "Roboto",
+              style: 'normal',
+              lineHeight: 2
+            },
+            color: "#fff"
+          },
+        },
+        x: {
+          grid: {
+            drawBorder: false,
+            display: true,
+            drawOnChartArea: true,
+            drawTicks: false,
+            borderDash: [5, 5],
+            color: 'rgba(255, 255, 255, .2)'
+          },
+          ticks: {
+            display: true,
+            color: '#f8f9fa',
+            padding: 10,
+            font: {
+              size: 14,
+              weight: 300,
+              family: "Roboto",
+              style: 'normal',
+              lineHeight: 2
+            },
+          }
+        }
+      }
+    }
   });
 
-  const menuChart = new Chart(document.getElementById('menuChart'), {
-      type: 'pie',
-      data: {
-          labels: {{ labels_menu|safe }},
-          datasets: [{
-              label: 'Menu Terlaris',
-              data: {{ values_menu|safe }},
-              backgroundColor: [
-                  '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
-                  '#858796', '#fd7e14', '#6f42c1', '#20c997', '#0dcaf0'
-              ],
-          }]
-      },
-      options: { responsive: true }
+  // Chart: Menu Terlaris (Pie)
+  var ctxMenu = document.getElementById("menuChart").getContext("2d");
+  new Chart(ctxMenu, {
+    type: "pie",
+    data: {
+      labels: {{ labels_menu|safe }},
+      datasets: [{
+        label: "Menu Terlaris",
+        data: {{ values_menu|safe }},
+        backgroundColor: [
+          '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
+          '#858796', '#fd7e14', '#6f42c1', '#20c997', '#0dcaf0'
+        ]
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          labels: {
+            color: "#f8f9fa",
+            font: {
+              size: 14,
+              weight: 300,
+              family: "Roboto",
+              style: 'normal',
+              lineHeight: 2
+            }
+          }
+        }
+      }
+    }
   });
 </script>
+
 
 {% endblock %}

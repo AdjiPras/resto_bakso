@@ -1,6 +1,7 @@
 from django.db import models
 
 class MenuBakso(models.Model):
+    id = models.AutoField(primary_key=True)
     nama = models.CharField(max_length=100)
     deskripsi = models.TextField()
     harga = models.DecimalField(max_digits=10, decimal_places=2)

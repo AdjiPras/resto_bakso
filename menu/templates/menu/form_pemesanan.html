@@ -1,29 +1,34 @@
 {% extends 'menu/base.html' %}
+{% load custom_tags %}  {# Wajib agar get_item bisa digunakan #}
 {% block content %}
 <h2>{{ title }}</h2>
 
 <form method="post">
     {% csrf_token %}
     <p>
-        Nama Pelanggan: <input type="text" name="nama_pelanggan" value="{{ nama_pelanggan }}">
+        Nama Pelanggan: <input type="text" name="nama_pelanggan" value="{{ nama_pelanggan|default:'' }}">
     </p>
     <p>
-        Nomor Meja: <input type="text" name="nomor_meja" value="{{ nomor_meja }}">
-    </p>
-
-    <p>
-        <label for="keterangan_pesanan">Keterangan / Menu Tambahan:</label><br>
-        <textarea name="keterangan_pesanan" id="keterangan_pesanan" rows="4" cols="50" placeholder="Contoh: Tambah kerupuk, tanpa sambal">{{ keterangan_pesanan }}</textarea>
+        Nomor Meja: <input type="text" name="nomor_meja" value="{{ nomor_meja|default:'' }}">
     </p>
 
     <h3>Daftar Menu:</h3>
     {% for menu in menu_list %}
         <p>
-            <input type="number" name="menu_{{ menu.id }}" placeholder="Jumlah"
-                   value="0" min="0">
+            <input type="number"
+                   name="menu_{{ menu.id }}"
+                   placeholder="Jumlah"
+                   value="{{ item_pesanan|get_item:menu.id|default:0 }}"
+                   min="0">
             {{ menu.nama }} (Rp {{ menu.harga }})
         </p>
     {% endfor %}
+
+    <p>
+        <label for="keterangan_pesanan">Keterangan / Menu Tambahan:</label><br>
+        <textarea name="keterangan_pesanan" id="keterangan_pesanan" rows="4" cols="50"
+                  placeholder="Contoh: Tambah kerupuk, tanpa sambal">{{ keterangan_pesanan|default:'' }}</textarea>
+    </p>
 
     <button type="submit">Simpan Pesanan</button>
 </form>

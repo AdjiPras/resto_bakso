@@ -14,7 +14,7 @@
           <div class="table-responsive p-0">
             <table class="table align-items-center mb-0">
               <thead>
-                <tr>
+                <tr class="text-center">
                   <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">No.</th>
                   <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Nama</th>
                   <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Deskripsi</th>
@@ -27,7 +27,7 @@
                 {% for m in menus %}
                 <tr>
                   <td>
-                    <p class="text-sm font-weight-bold mb-0">{{ forloop.counter }}</p>
+                    <p class="text-sm font-weight-bold mb-0 text-center">{{ forloop.counter }}</p>
                   </td>
                   <td>
                     <p class="text-sm font-weight-bold mb-0">{{ m.nama }}</p>
@@ -36,21 +36,20 @@
                     <p class="text-sm mb-0">{{ m.deskripsi }}</p>
                   </td>
                   <td>
-                    <p class="text-sm mb-0">Rp {{ m.harga|floatformat:0 }}</p>
+                    <p class="text-sm mb-0 text-center">Rp {{ m.harga|floatformat:0 }}</p>
                   </td>
-                  <td>
+                  <td class=" text-center">
                     {% if m.tersedia %}
                       <span class="badge badge-sm bg-gradient-success">Tersedia</span>
                     {% else %}
                       <span class="badge badge-sm bg-gradient-danger">Tidak Tersedia</span>
                     {% endif %}
                   </td>
-                  <td class="align-middle text-center">
-                    <a href="{% url 'edit_menu' m.pk %}" class="text-secondary font-weight-bold text-xs me-2" data-toggle="tooltip" title="Edit Menu">
+                  <td class="text-center">
+                    <a href="{% url 'edit_menu' m.id %}" class="btn btn-sm btn-secondary" data-toggle="tooltip" title="Edit Menu">
                       Edit
                     </a>
-                    |
-                    <a href="{% url 'hapus_menu' m.pk %}" class="text-danger font-weight-bold text-xs" data-toggle="tooltip" title="Hapus Menu" onclick="return confirm('Yakin ingin menghapus menu ini?')">
+                    <a href="{% url 'hapus_menu' m.id %}" class="btn btn-sm btn-danger" data-toggle="tooltip" title="Hapus Menu" onclick="return confirm('Yakin ingin menghapus menu ini?')">
                       Hapus
                     </a>
                   </td>

@@ -10,6 +10,7 @@ import json
 from django.http import JsonResponse
 from django.db.models import Count, Sum
 from datetime import datetime
+from django.views.decorators.http import require_POST
 
 
 def dapur_view(request):
@@ -110,6 +111,8 @@ def daftar_menu(request):
     menus = MenuBakso.objects.all()
     return render(request, 'menu/daftar_menu.html', {'menus': menus})
 
+
+# MENU
 def tambah_menu(request):
     form = MenuBaksoForm(request.POST or None)
     if form.is_valid():
@@ -117,8 +120,8 @@ def tambah_menu(request):
         return redirect('daftar_menu')
     return render(request, 'menu/form_menu.html', {'form': form, 'title': 'Tambah Menu'})
 
-def edit_menu(request, pk):
-    menu = get_object_or_404(MenuBakso, pk=pk)
+def edit_menu(request, id):
+    menu = get_object_or_404(MenuBakso, id=id)
     form = MenuBaksoForm(request.POST or None, instance=menu)
     if form.is_valid():
         form.save()
@@ -136,8 +139,12 @@ def hapus_menu(request, pk):
 
 # Daftar semua pesanan
 def daftar_pemesanan(request):
-    pemesanan_list = Pemesanan.objects.all().order_by('-tanggal_pesan')
-    return render(request, 'menu/daftar_pemesanan.html', {'pemesanan_list': pemesanan_list})
+    # pemesanan_list = Pemesanan.objects.all().order_by('-tanggal_pesan')
+    pemesanan_list = Pemesanan.objects.prefetch_related('item_pesanan__menu').order_by('-tanggal_pesan')
+    context = {
+        'pemesanan_list': pemesanan_list
+    }
+    return render(request, 'menu/daftar_pemesanan.html', context)
 
 # Form tambah pesanan
 def tambah_pemesanan(request):
@@ -173,8 +180,7 @@ def tambah_pemesanan(request):
         'keterangan_pesanan': '',  # ✅ untuk isi awal textarea
     })
 
-
-# Detail pesanan + tombol bayar
+# DETAIL PESANAN
 def detail_pemesanan(request, pesanan_id):
     pesanan = get_object_or_404(Pemesanan, id=pesanan_id)
     item_list = pesanan.item_pesanan.all()
@@ -184,6 +190,65 @@ def detail_pemesanan(request, pesanan_id):
         'pesanan': pesanan,
         'total_harga': total_harga,
     })
+
+# EDIT PESANAN
+def edit_pemesanan(request, pesanan_id):
+    pesanan = get_object_or_404(Pemesanan, id=pesanan_id)
+    menu_list = MenuBakso.objects.all()
+
+    if request.method == 'POST':
+        pesanan.nama_pelanggan = request.POST.get('nama_pelanggan', '')
+        pesanan.nomor_meja = request.POST.get('nomor_meja')
+        pesanan.keterangan_pesanan = request.POST.get('keterangan_pesanan', '')
+        pesanan.save()
+
+        pesanan.item_pesanan.all().delete()
+
+        for menu in menu_list:
+            jumlah = int(request.POST.get(f'menu_{menu.id}', 0))
+            if jumlah > 0:
+                ItemPesanan.objects.create(
+                    pemesanan=pesanan,
+                    menu=menu,
+                    jumlah=jumlah
+                )
+
+        return redirect('daftar_pemesanan')
+
+    return render(request, 'menu/form_pemesanan.html', {
+        'menu_list': menu_list,
+        'title': 'Edit Pesanan',
+        'nama_pelanggan': pesanan.nama_pelanggan,
+        'nomor_meja': pesanan.nomor_meja,
+        'keterangan_pesanan': pesanan.keterangan_pesanan,
+        'pesanan': pesanan,
+        'item_pesanan': {item.menu.id: item.jumlah for item in pesanan.item_pesanan.all()}
+    })
+
+# HAPUS PESANAN
+def hapus_pemesanan(request, pesanan_id):
+    pesanan = get_object_or_404(Pemesanan, id=pesanan_id)
+
+    if request.method == 'POST':
+        pesanan.delete()
+        return redirect('daftar_pemesanan')
+
+    return render(request, 'menu/konfirmasi_hapus.html', {
+        'pesanan': pesanan
+    })
+
+
+
+@require_POST
+def ubah_status_pesanan(request, pesanan_id):
+    pesanan = get_object_or_404(Pemesanan, id=pesanan_id)
+    status_baru = request.POST.get('status')
+
+    if status_baru in ['proses', 'selesai']:
+        pesanan.status = status_baru
+        pesanan.save()
+
+    return redirect('dashboard')
 
 # Bayar pesanan
 def bayar_pemesanan(request, pesanan_id):

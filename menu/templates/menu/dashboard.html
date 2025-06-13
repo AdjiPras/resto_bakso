@@ -50,7 +50,7 @@
       <div class="card">
         <div class="card-header p-3 pt-2">
           <div class="icon icon-lg icon-shape bg-gradient-secondary shadow-secondary text-center border-radius-xl mt-n4 position-absolute">
-            <i class="fa fa-bar-chart opacity-10" aria-hidden="true"></i>
+            <i class="fa fa-bar-chart" aria-hidden="true"></i>
           </div>
           <div class="text-end pt-1">
             <p class="text-sm mb-0 text-capitalize">Total Pesanan</p>
@@ -76,26 +76,40 @@
     <div class="table-responsive p-3">
       <table class="table align-items-center mb-0">
         <thead>
-          <tr>
+          <tr class="text-center">
+            <th>No.</th>
             <th>Waktu Pesan</th>
             <th>Meja</th>
             <th>Status</th>
-            <th>Jumlah Item</th>
+            <th>Detail Pesanan</th>
           </tr>
         </thead>
         <tbody>
           {% for pesanan in daftar_pesanan_terbaru %}
           <tr>
-            <td>{{ pesanan.tanggal_pesan|date:"d M Y H:i" }}</td>
-            <td>{{ pesanan.nomor_meja }}</td>
+            <td class="text-center">{{ forloop.counter }}</td>
+            <td class="text-center">{{ pesanan.tanggal_pesan|date:"d M Y H:i" }}</td>
+            <td class="text-center">{{ pesanan.nomor_meja }}</td>
             <td>
-              {% if pesanan.status == 'selesai' %}
-                <span class="badge bg-success">Selesai</span>
-              {% else %}
-                <span class="badge bg-warning">Proses</span>
-              {% endif %}
+              <form method="post" action="{% url 'ubah_status_pesanan' pesanan.id %}" class="d-flex align-items-center gap-2">
+                {% csrf_token %}
+                {% if pesanan.status == 'selesai' %}
+                  <span class="badge bg-success">
+                    <i class="fa fa-check-square" aria-hidden="true"></i>
+                  </span>
+                {% else %}
+                  <span class="badge bg-warning">
+                    <i class="fa fa-spinner" aria-hidden="true"></i>
+                  </span>
+                {% endif %}
+                <select name="status" onchange="this.form.submit()" class="form-select form-select-sm" style="width: auto; margin: auto;">
+                  <option value="proses" {% if pesanan.status == 'proses' %}selected{% endif %}>Proses</option>
+                  <option value="selesai" {% if pesanan.status == 'selesai' %}selected{% endif %}>Selesai</option>
+                </select>
+              </form>
             </td>
-            <td>{{ pesanan.item_pesanan.all|length }}</td>
+
+            <td>{{ pesanan.keterangan_pesanan }}</td>
           </tr>
           {% empty %}
           <tr><td colspan="4" class="text-center">Belum ada pesanan.</td></tr>

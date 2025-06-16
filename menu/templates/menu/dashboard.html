@@ -1,6 +1,9 @@
 {% extends 'menu/base.html' %}
 {% block content %}
 {% load static %}
+{% load rupiah %}
+{% load custom_tags %}
+{% load humanize %}
 
 <h3>Dashboard Pemesanan</h3>
 
@@ -78,7 +81,8 @@
         <thead>
           <tr class="text-center">
             <th>No.</th>
-            <th>Waktu Pesan</th>
+            <th>Waktu</th>
+            <th>Pelanggan</th>
             <th>Meja</th>
             <th>Status</th>
             <th>Detail Pesanan</th>
@@ -89,6 +93,7 @@
           <tr>
             <td class="text-center">{{ forloop.counter }}</td>
             <td class="text-center">{{ pesanan.tanggal_pesan|date:"d M Y H:i" }}</td>
+            <td class="text-center"><b>{{ pesanan.nama_pelanggan }}</b></td>
             <td class="text-center">{{ pesanan.nomor_meja }}</td>
             <td>
               <form method="post" action="{% url 'ubah_status_pesanan' pesanan.id %}" class="d-flex align-items-center gap-2">
@@ -108,274 +113,67 @@
                 </select>
               </form>
             </td>
+            <td colspan="5">
+              <div class="d-flex flex-row gap-3">
+                {% for column in pesanan.item_pesanan.all|slice_list:2 %}
+                  <div class="d-flex flex-column gap-2">
+                    {% for item in column %}
+                      <div class="card shadow-sm border rounded p-2 bg-light">
+                        <div class="d-flex justify-content-between">
+                          <div>
+                            <strong>{{ item.menu.nama }}</strong><br>
+                            <small>@{{ item.jumlah }} x {{ item.menu.harga|rupiah }}</small>
+                          </div>
+                          <div class="text-end fw-bold text-success">
+                            {{ item.subtotal|rupiah }}
+                          </div>
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+                {% endfor %}
+              </div>
+            </td>
 
-            <td>{{ pesanan.keterangan_pesanan }}</td>
+            {% empty %}
+            <td colspan="6" class="text-center">Belum ada pesanan.</td></tr>
+            {% endfor %}
           </tr>
-          {% empty %}
-          <tr><td colspan="4" class="text-center">Belum ada pesanan.</td></tr>
-          {% endfor %}
         </tbody>
       </table>
     </div>
   </div>
 </div>
+<!-- Navigasi Paginasi -->
+<div class="d-flex justify-content-center mt-3">
+  <nav>
+    <ul class="pagination">
+      {% if daftar_pesanan_terbaru.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ daftar_pesanan_terbaru.previous_page_number }}{% if bulan %}&bulan={{ bulan }}{% endif %}{% if tahun %}&tahun={{ tahun }}{% endif %}">&laquo;</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+      {% endif %}
 
+      {% for num in daftar_pesanan_terbaru.paginator.page_range %}
+        {% if daftar_pesanan_terbaru.number == num %}
+          <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+        {% elif num > daftar_pesanan_terbaru.number|add:'-3' and num < daftar_pesanan_terbaru.number|add:'3' %}
+          <li class="page-item"><a class="page-link" href="?page={{ num }}{% if bulan %}&bulan={{ bulan }}{% endif %}{% if tahun %}&tahun={{ tahun }}{% endif %}">{{ num }}</a></li>
+        {% endif %}
+      {% endfor %}
 
-<form method="get" class="row g-3 mb-4">
-  <div class="col-md-3">
-    <select name="bulan" class="form-select">
-        <option value="">Pilih Bulan</option>
-        {% for i in bulan_list %}
-            <option value="{{ i }}" {% if bulan == i %}selected{% endif %}>{{ i }}</option>
-        {% endfor %}
-    </select>
-  </div>
-  <div class="col-md-3">
-    <select name="tahun" class="form-select">
-        <option value="">Pilih Tahun</option>
-        {% for y in tahun_list %}
-            <option value="{{ y }}" {% if tahun == y %}selected{% endif %}>{{ y }}</option>
-        {% endfor %}
-    </select>
-  </div>
-  <div class="col-md-3">
-    <button type="submit" class="btn btn-primary">Filter</button>
-  </div>
-</form>
-
-<div class="row">
-  <!-- 📊 Jumlah Pemesanan per Hari -->
-  <div class="col-lg-4 col-md-6 mt-4 mb-4">
-    <div class="card z-index-2">
-      <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2 bg-transparent">
-        <div class="bg-gradient-info shadow-info border-radius-lg py-3 pe-1">
-          <div class="chart">
-            <canvas id="pesananChart" class="chart-canvas" height="170"></canvas>
-          </div>
-        </div>
-      </div>
-      <div class="card-body">
-        <h6 class="mb-0">📊 Jumlah Pemesanan per Hari</h6>
-        <p class="text-sm">Statistik harian jumlah pemesanan.</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- 💰 Total Penjualan per Hari -->
-  <div class="col-lg-4 col-md-6 mt-4 mb-4">
-    <div class="card z-index-2">
-      <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2 bg-transparent">
-        <div class="bg-gradient-success shadow-success border-radius-lg py-3 pe-1">
-          <div class="chart">
-            <canvas id="penjualanChart" class="chart-canvas" height="170"></canvas>
-          </div>
-        </div>
-      </div>
-      <div class="card-body">
-        <h6 class="mb-0">💰 Total Penjualan per Hari</h6>
-        <p class="text-sm">Rekap penjualan harian secara keseluruhan.</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- 🍜 Menu Terlaris -->
-  <div class="col-lg-4 col-md-12 mt-4 mb-4">
-    <div class="card z-index-2">
-      <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2 bg-transparent">
-        <div class="bg-gradient-warning shadow-warning border-radius-lg py-3 pe-1">
-          <div class="chart">
-            <canvas id="menuChart" class="chart-canvas" height="170"></canvas>
-          </div>
-        </div>
-      </div>
-      <div class="card-body">
-        <h6 class="mb-0">🍜 Menu Terlaris</h6>
-        <p class="text-sm">Grafik item menu yang paling banyak dipesan.</p>
-      </div>
-    </div>
-  </div>
+      {% if daftar_pesanan_terbaru.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ daftar_pesanan_terbaru.next_page_number }}{% if bulan %}&bulan={{ bulan }}{% endif %}{% if tahun %}&tahun={{ tahun }}{% endif %}">&raquo;</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+      {% endif %}
+    </ul>
+  </nav>
 </div>
-
-<script src="{% static 'assets/js/plugins/chartjs.min.js' %}"></script>
-<script>
-  // Chart: Jumlah Pesanan
-  var ctxPesanan = document.getElementById("pesananChart").getContext("2d");
-  new Chart(ctxPesanan, {
-    type: "bar",
-    data: {
-      labels: {{ labels_pesanan|safe }},
-      datasets: [{
-        label: "Jumlah Pesanan",
-        tension: 0.4,
-        borderWidth: 0,
-        borderRadius: 4,
-        borderSkipped: false,
-        backgroundColor: "rgba(255, 255, 255, .8)",
-        data: {{ values_pesanan|safe }},
-        maxBarThickness: 6
-      }],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      interaction: { intersect: false, mode: 'index' },
-      scales: {
-        y: {
-          grid: {
-            drawBorder: false,
-            display: true,
-            drawOnChartArea: true,
-            drawTicks: false,
-            borderDash: [5, 5],
-            color: 'rgba(255, 255, 255, .2)'
-          },
-          ticks: {
-            suggestedMin: 0,
-            beginAtZero: true,
-            padding: 10,
-            font: {
-              size: 14,
-              weight: 300,
-              family: "Roboto",
-              style: 'normal',
-              lineHeight: 2
-            },
-            color: "#fff"
-          },
-        },
-        x: {
-          grid: {
-            drawBorder: false,
-            display: true,
-            drawOnChartArea: true,
-            drawTicks: false,
-            borderDash: [5, 5],
-            color: 'rgba(255, 255, 255, .2)'
-          },
-          ticks: {
-            display: true,
-            color: '#f8f9fa',
-            padding: 10,
-            font: {
-              size: 14,
-              weight: 300,
-              family: "Roboto",
-              style: 'normal',
-              lineHeight: 2
-            },
-          }
-        }
-      }
-    }
-  });
-
-  // Chart: Total Penjualan
-  var ctxPenjualan = document.getElementById("penjualanChart").getContext("2d");
-  new Chart(ctxPenjualan, {
-    type: "bar",
-    data: {
-      labels: {{ labels_penjualan|safe }},
-      datasets: [{
-        label: "Total Penjualan (Rp)",
-        tension: 0.4,
-        borderWidth: 0,
-        borderRadius: 4,
-        borderSkipped: false,
-        backgroundColor: "rgba(255, 255, 255, .8)",
-        data: {{ values_penjualan|safe }},
-        maxBarThickness: 6
-      }],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      interaction: { intersect: false, mode: 'index' },
-      scales: {
-        y: {
-          grid: {
-            drawBorder: false,
-            display: true,
-            drawOnChartArea: true,
-            drawTicks: false,
-            borderDash: [5, 5],
-            color: 'rgba(255, 255, 255, .2)'
-          },
-          ticks: {
-            suggestedMin: 0,
-            beginAtZero: true,
-            padding: 10,
-            font: {
-              size: 14,
-              weight: 300,
-              family: "Roboto",
-              style: 'normal',
-              lineHeight: 2
-            },
-            color: "#fff"
-          },
-        },
-        x: {
-          grid: {
-            drawBorder: false,
-            display: true,
-            drawOnChartArea: true,
-            drawTicks: false,
-            borderDash: [5, 5],
-            color: 'rgba(255, 255, 255, .2)'
-          },
-          ticks: {
-            display: true,
-            color: '#f8f9fa',
-            padding: 10,
-            font: {
-              size: 14,
-              weight: 300,
-              family: "Roboto",
-              style: 'normal',
-              lineHeight: 2
-            },
-          }
-        }
-      }
-    }
-  });
-
-  // Chart: Menu Terlaris (Pie)
-  var ctxMenu = document.getElementById("menuChart").getContext("2d");
-  new Chart(ctxMenu, {
-    type: "pie",
-    data: {
-      labels: {{ labels_menu|safe }},
-      datasets: [{
-        label: "Menu Terlaris",
-        data: {{ values_menu|safe }},
-        backgroundColor: [
-          '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
-          '#858796', '#fd7e14', '#6f42c1', '#20c997', '#0dcaf0'
-        ]
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: {
-          labels: {
-            color: "#f8f9fa",
-            font: {
-              size: 14,
-              weight: 300,
-              family: "Roboto",
-              style: 'normal',
-              lineHeight: 2
-            }
-          }
-        }
-      }
-    }
-  });
-</script>
 
 
 {% endblock %}

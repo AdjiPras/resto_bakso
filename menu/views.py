@@ -5,12 +5,15 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .models import MenuBakso, Pemesanan, ItemPesanan
 from django.db.models import Sum
 
-from django.db.models.functions import TruncDate
+from django.db.models.functions import TruncDate,  TruncMonth
 import json
 from django.http import JsonResponse
 from django.db.models import Count, Sum
 from datetime import datetime
 from django.views.decorators.http import require_POST
+
+from django.db.models import F, ExpressionWrapper, DecimalField
+from django.core.paginator import Paginator
 
 
 def dapur_view(request):
@@ -18,12 +21,14 @@ def dapur_view(request):
     context = {'daftar_pesanan': daftar_pesanan}
     return render(request, 'menu/dapur.html', context)
 
+
 def dashboard_view(request):
     bulan = request.GET.get('bulan')
     tahun = request.GET.get('tahun')
 
     pesanan = Pemesanan.objects.all()
 
+    # Filter waktu jika dipilih
     if bulan and tahun:
         pesanan = pesanan.filter(
             tanggal_pesan__month=int(bulan),
@@ -43,11 +48,18 @@ def dashboard_view(request):
         .order_by('tanggal')
     )
 
-    # Grafik 2: Total Penjualan per Hari
+    # Grafik 2: Total Penjualan per Hari (BENAR)
     data_penjualan = (
         pesanan.annotate(tanggal=TruncDate('tanggal_pesan'))
         .values('tanggal')
-        .annotate(total=Sum('item_pesanan__menu__harga'))
+        .annotate(
+            total=Sum(
+                ExpressionWrapper(
+                    F('item_pesanan__menu__harga') * F('item_pesanan__jumlah'),
+                    output_field=DecimalField()
+                )
+            )
+        )
         .order_by('tanggal')
     )
 
@@ -67,8 +79,14 @@ def dashboard_view(request):
         .order_by('nomor_meja')
     )
 
-    # ➕ Tambahan: Daftar Pesanan Terbaru (limit 10)
+    # ➕ Daftar Pesanan Terbaru
     daftar_pesanan_terbaru = pesanan.order_by('-tanggal_pesan')[:10]
+
+    # ➕ Daftar Pesanan Terbaru dengan Paginasi
+    daftar_pesanan_all = pesanan.order_by('-tanggal_pesan')
+    paginator = Paginator(daftar_pesanan_all, 5)  # Ganti 5 sesuai jumlah per halaman
+    page_number = request.GET.get('page')
+    daftar_pesanan_terbaru = paginator.get_page(page_number)
 
     context = {
         # Ringkasan
@@ -80,17 +98,17 @@ def dashboard_view(request):
         'labels_pesanan': [str(d['tanggal']) for d in data_pesanan],
         'values_pesanan': [d['jumlah'] for d in data_pesanan],
         'labels_penjualan': [str(d['tanggal']) for d in data_penjualan],
-        'values_penjualan': [d['total'] for d in data_penjualan],
+        'values_penjualan': [float(d['total']) if d['total'] is not None else 0 for d in data_penjualan],
         'labels_menu': [d['menu__nama'] for d in data_menu],
         'values_menu': [d['total'] for d in data_menu],
 
         # Monitoring Dapur
         'monitoring_dapur': monitoring_dapur,
 
-        # ➕ Daftar Pesanan Terbaru
+        # Pesanan Terbaru
         'daftar_pesanan_terbaru': daftar_pesanan_terbaru,
 
-        # Filter waktu
+        # Filter bulan/tahun
         'bulan': bulan,
         'tahun': tahun,
         'bulan_list': ['01','02','03','04','05','06','07','08','09','10','11','12'],
@@ -151,18 +169,26 @@ def tambah_pemesanan(request):
     menu_list = MenuBakso.objects.all()
 
     if request.method == 'POST':
+        print("DEBUG: Tipe request.POST =", type(request.POST))  # Debug jika error
+
         nama_pelanggan = request.POST.get('nama_pelanggan', '')
         nomor_meja = request.POST.get('nomor_meja')
-        keterangan = request.POST.get('keterangan_pesanan', '')  # ✅ ambil isi textarea
+        keterangan = request.POST.get('keterangan_pesanan', '')
 
+        # Simpan data pemesanan ke database
         pesanan = Pemesanan.objects.create(
             nama_pelanggan=nama_pelanggan,
             nomor_meja=nomor_meja,
-            keterangan_pesanan=keterangan  # ✅ simpan ke database
+            keterangan_pesanan=keterangan
         )
 
+        # Simpan item pesanan (jumlah menu)
         for menu in menu_list:
-            jumlah = int(request.POST.get(f'menu_{menu.id}', 0))
+            try:
+                jumlah = int(request.POST.get(f'menu_{menu.id}', 0))
+            except (ValueError, TypeError):
+                jumlah = 0
+
             if jumlah > 0:
                 ItemPesanan.objects.create(
                     pemesanan=pesanan,
@@ -172,13 +198,16 @@ def tambah_pemesanan(request):
 
         return redirect('daftar_pemesanan')
 
+    # Mode GET (tampilkan form kosong)
     return render(request, 'menu/form_pemesanan.html', {
         'menu_list': menu_list,
         'title': 'Tambah Pesanan',
         'nama_pelanggan': '',
         'nomor_meja': '',
-        'keterangan_pesanan': '',  # ✅ untuk isi awal textarea
+        'keterangan_pesanan': '',
     })
+
+
 
 # DETAIL PESANAN
 def detail_pemesanan(request, pesanan_id):

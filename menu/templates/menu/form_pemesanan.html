@@ -1,37 +1,62 @@
 {% extends 'menu/base.html' %}
-{% load custom_tags %}  {# Wajib agar get_item bisa digunakan #}
+{% load custom_tags %}
+{% load static %}
 {% block content %}
-<h2>{{ title }}</h2>
+<div class="container mt-4 mb-4" style="width: 80%;">
 
-<form method="post">
-    {% csrf_token %}
-    <p>
-        Nama Pelanggan: <input type="text" name="nama_pelanggan" value="{{ nama_pelanggan|default:'' }}">
-    </p>
-    <p>
-        Nomor Meja: <input type="text" name="nomor_meja" value="{{ nomor_meja|default:'' }}">
-    </p>
+  <div class="card shadow">
+    <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+      <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
+        <h6 class="text-white text-capitalize ps-3">{{ title }}</h6>
+      </div>
+    </div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
 
-    <h3>Daftar Menu:</h3>
-    {% for menu in menu_list %}
-        <p>
-            <input type="number"
-                   name="menu_{{ menu.id }}"
-                   placeholder="Jumlah"
-                   value="{{ item_pesanan|get_item:menu.id|default:0 }}"
-                   min="0">
-            {{ menu.nama }} (Rp {{ menu.harga }})
-        </p>
-    {% endfor %}
+        <!-- Input Nama Pelanggan -->
+        <div class="mb-3">
+          <label for="nama_pelanggan" class="form-label">Nama Pelanggan</label>
+          <input type="text" class="form-control" id="nama_pelanggan" name="nama_pelanggan"
+                 value="{{ nama_pelanggan|default:'' }}" required>
+        </div>
 
-    <p>
-        <label for="keterangan_pesanan">Keterangan / Menu Tambahan:</label><br>
-        <textarea name="keterangan_pesanan" id="keterangan_pesanan" rows="4" cols="50"
-                  placeholder="Contoh: Tambah kerupuk, tanpa sambal">{{ keterangan_pesanan|default:'' }}</textarea>
-    </p>
+        <!-- Input Nomor Meja -->
+        <div class="mb-3">
+          <label for="nomor_meja" class="form-label">Nomor Meja</label>
+          <input type="text" class="form-control" id="nomor_meja" name="nomor_meja"
+                 value="{{ nomor_meja|default:'' }}" required>
+        </div>
 
-    <button type="submit">Simpan Pesanan</button>
-</form>
+        <!-- Daftar Menu -->
+        <h5 class="mt-4">Daftar Menu</h5>
+        <div class="row">
+          {% for menu in menu_list %}
+            <div class="col-md-6 mb-3">
+              <label class="form-label">{{ menu.nama }} (Rp {{ menu.harga|floatformat:"0" }})</label>
+              <input type="number" class="form-control"
+                     name="menu_{{ menu.id }}"
+                     placeholder="Jumlah"
+                     min="0"
+                     value="0">
+            </div>
+          {% endfor %}
+        </div>
 
-<a href="{% url 'daftar_pemesanan' %}">Kembali</a>
+        <!-- Keterangan -->
+        <div class="mb-3">
+          <label for="keterangan_pesanan" class="form-label">Keterangan / Menu Tambahan</label>
+          <textarea class="form-control" name="keterangan_pesanan" id="keterangan_pesanan"
+                    rows="4" placeholder="Contoh: Tambah kerupuk, tanpa sambal">{{ keterangan_pesanan|default:'' }}</textarea>
+        </div>
+
+        <!-- Tombol Aksi -->
+        <div class="d-flex justify-content-between">
+          <a href="{% url 'daftar_pemesanan' %}" class="btn btn-sm btn-secondary">Kembali</a>
+          <button type="submit" class="btn btn-sm btn-primary">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 {% endblock %}

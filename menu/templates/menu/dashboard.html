@@ -77,13 +77,12 @@
   </div>
   <div class="card-body px-0 pb-2">
     <div class="table-responsive p-3">
-      <table class="table align-items-center mb-0">
+      <table class="table align-items-center table-striped mb-0">
         <thead>
           <tr class="text-center">
             <th>No.</th>
             <th>Waktu</th>
-            <th>Pelanggan</th>
-            <th>Meja</th>
+            <th>Pelanggan/Meja</th>
             <th>Status</th>
             <th>Detail Pesanan</th>
           </tr>
@@ -93,21 +92,20 @@
           <tr>
             <td class="text-center">{{ forloop.counter }}</td>
             <td class="text-center">{{ pesanan.tanggal_pesan|date:"d M Y H:i" }}</td>
-            <td class="text-center"><b>{{ pesanan.nama_pelanggan }}</b></td>
-            <td class="text-center">{{ pesanan.nomor_meja }}</td>
+            <td class="text-center"><b>{{ pesanan.nama_pelanggan }}/ Meja {{ pesanan.nomor_meja }}</b></td>
             <td>
-              <form method="post" action="{% url 'ubah_status_pesanan' pesanan.id %}" class="d-flex align-items-center gap-2">
+              <form method="post" action="{% url 'ubah_status_pesanan' pesanan.id %}" class="d-flex flex-column align-items-center gap-2">
                 {% csrf_token %}
                 {% if pesanan.status == 'selesai' %}
                   <span class="badge bg-success">
-                    <i class="fa fa-check-square" aria-hidden="true"></i>
+                    <i class="fa fa-check-square" aria-hidden="true" style="font-size: 20px;"></i>
                   </span>
                 {% else %}
                   <span class="badge bg-warning">
-                    <i class="fa fa-spinner" aria-hidden="true"></i>
+                    <i class="fa fa-spinner" aria-hidden="true" style="font-size: 20px;"></i>
                   </span>
                 {% endif %}
-                <select name="status" onchange="this.form.submit()" class="form-select form-select-sm" style="width: auto; margin: auto;">
+                <select name="status" onchange="this.form.submit()" class="form-select form-select-sm" style="width: auto;">
                   <option value="proses" {% if pesanan.status == 'proses' %}selected{% endif %}>Proses</option>
                   <option value="selesai" {% if pesanan.status == 'selesai' %}selected{% endif %}>Selesai</option>
                 </select>

@@ -1,96 +1,65 @@
 {% extends 'menu/base.html' %}
 {% load static %}
 {% block content %}
-<a href="{% url 'tambah_pemesanan' %}" class="btn btn-sm btn-success" style="text-transform: capitalize;">Tambah Pemesanan</a>
-<div class="container-fluid py-4">
+
+<a href="{% url 'tambah_pemesanan' %}" class="btn btn-success btn-sm mb-3">Tambah Pemesanan</a>
+
+<div class="container-fluid py-2">
   <div class="row">
-    <div class="col-12">
-      <div class="card my-4">
-        <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
-          <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
-            <h6 class="text-white text-capitalize ps-3">Daftar Pemesanan</h6>
-          </div>
+    {% for p in pemesanan_list %}
+    <div class="col-md-6 col-lg-4 mb-4">
+      <div class="card shadow border-0 h-100">
+        <div class="card-header bg-gradient-primary text-white py-2">
+          <h6 class="mb-0">Meja {{ p.nomor_meja }}</h6>
         </div>
-        <div class="card-body px-0 pb-2">
-          <div class="table-responsive p-0">
-            <table class="table align-items-center mb-0">
-              <thead>
-                <tr class="text-center">
-                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">No.</th>
-                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Nomor Meja</th>
-                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Pelanggan</th>
-                  <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Tanggal</th>
-                  <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Payment</th>
-                  <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
-                  <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for p in pemesanan_list %}
-                <tr>
-                  <td class="text-center">
-                    <p class="text-sm font-weight-bold mb-0">{{ forloop.counter }}</p>
-                  </td>
-                  <td class="text-center">
-                    <p class="text-sm font-weight-bold mb-0">{{ p.nomor_meja }}</p>
-                  </td>
-                  <td>
-                    <p class="text-sm mb-0">{{ p.nama_pelanggan|default:"Anonim" }}</p>
-                    <p class="text-xs text-secondary mb-0">{{ p.keterangan_pesanan|default:"Tidak ada tambahan" }}</p>
+        <div class="card-body">
+          <p class="mb-1"><strong>Pelanggan:</strong> {{ p.nama_pelanggan|default:"Anonim" }}</p>
+          <p class="mb-1 text-secondary"><em>{{ p.keterangan_pesanan|default:"Tidak ada tambahan" }}</em></p>
 
-                    <!-- ⬇️ DITAMBAHKAN: Daftar menu dipesan -->
-                    <div class="text-xs text-secondary mt-1">
-                      <strong>Menu:</strong>
-                      <ul class="mb-0 ps-3">
-                        {% for item in p.item_pesanan.all %}
-                          <li>{{ item.menu.nama }} x{{ item.jumlah }}</li>
-                        {% empty %}
-                          <li>(Tidak ada menu)</li>
-                        {% endfor %}
-                      </ul>
-                    </div>
-                  </td>
-                  <td class="align-middle text-center">
-                    <span class="text-xs font-weight-bold">{{ p.tanggal_pesan|date:"d M Y H:i" }}</span>
-                  </td>
-                  <td class="align-middle text-center text-sm">
-                    {% if p.sudah_dibayar %}
-                      <span class="badge badge-sm bg-gradient-success">Sudah Dibayar</span>
-                    {% else %}
-                      <span class="badge badge-sm bg-gradient-warning">Belum Dibayar</span>
-                    {% endif %}
-                  </td>
-                  <td class="align-middle text-center text-sm">
-                    {% if p.status == 'selesai' %}
-                      <span class="badge bg-success">
-                        <i class="fa fa-check-square" aria-hidden="true"></i>
-                      </span>
-                    {% else %}
-                      <span class="badge bg-warning">
-                        <i class="fa fa-spinner" aria-hidden="true"></i>
-                      </span>
-                    {% endif %}
-                  </td>
-                  <td class="text-center">
-                    <a href="{% url 'detail_pemesanan' p.id %}" class="btn btn-sm btn-primary text-xs mb-1" data-toggle="tooltip" title="Detail">
-                      <i class="fa fa-eye"></i>
-                    </a>
-                    <a href="{% url 'edit_pemesanan' p.id %}" class="btn btn-sm btn-warning text-xs mb-1" data-toggle="tooltip" title="Edit">
-                      <i class="fa fa-edit"></i>
-                    </a>
-                    <a href="{% url 'hapus_pemesanan' p.id %}" class="btn btn-sm btn-danger text-xs mb-1" data-toggle="tooltip" title="Hapus" onclick="return confirm('Yakin ingin menghapus pemesanan ini?');">
-                      <i class="fa fa-trash"></i>
-                    </a>
-                  </td>
-                </tr>
-                {% endfor %}
-              </tbody>
+          <p class="mt-3 mb-1"><strong>Menu Dipesan:</strong></p>
+          <ul class="ps-3 mb-2">
+            {% for item in p.item_pesanan.all %}
+              <li>{{ item.menu.nama }} x{{ item.jumlah }}</li>
+            {% empty %}
+              <li>(Tidak ada menu)</li>
+            {% endfor %}
+          </ul>
 
-            </table>
-          </div>
+          <p class="mb-1"><strong>Tanggal:</strong> {{ p.tanggal_pesan|date:"d M Y H:i" }}</p>
+          
+          <p class="mb-1">
+            <strong>Payment:</strong>
+            {% if p.sudah_dibayar %}
+              <span class="badge bg-gradient-success">Sudah Dibayar</span>
+            {% else %}
+              <span class="badge bg-gradient-warning">Belum Dibayar</span>
+            {% endif %}
+          </p>
+
+          <p class="mb-2">
+            <strong>Status:</strong>
+            {% if p.status == 'selesai' %}
+              <span class="badge bg-success"><i class="fa fa-check-square"></i> Selesai</span>
+            {% else %}
+              <span class="badge bg-warning"><i class="fa fa-spinner"></i> Diproses</span>
+            {% endif %}
+          </p>
+        </div>
+        <div class="card-footer d-flex justify-content-between">
+          <a href="{% url 'detail_pemesanan' p.id %}" class="btn btn-sm btn-primary" data-toggle="tooltip" title="Detail">
+            <i class="fa fa-eye"></i>
+          </a>
+          <a href="{% url 'edit_pemesanan' p.id %}" class="btn btn-sm btn-warning" data-toggle="tooltip" title="Edit">
+            <i class="fa fa-edit"></i>
+          </a>
+          <a href="{% url 'hapus_pemesanan' p.id %}" class="btn btn-sm btn-danger" data-toggle="tooltip" title="Hapus" onclick="return confirm('Yakin ingin menghapus pemesanan ini?');">
+            <i class="fa fa-trash"></i>
+          </a>
         </div>
       </div>
     </div>
+    {% endfor %}
   </div>
 </div>
+
 {% endblock %}

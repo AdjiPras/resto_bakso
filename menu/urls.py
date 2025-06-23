@@ -25,4 +25,6 @@ urlpatterns = [
 
     # Kasir
     path('kasir/', views.kasir_view, name='kasir_view'),
+    path('bayar/<int:pesanan_id>/', views.bayar_pemesanan, name='bayar_pemesanan'),
+
 ]

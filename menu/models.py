@@ -22,12 +22,14 @@ class Pemesanan(models.Model):
     sudah_dibayar = models.BooleanField(default=False)
     keterangan_pesanan = models.TextField(blank=True, null=True)
 
-    # Tambahan untuk monitoring DAPUR
     status = models.CharField(max_length=20, choices=STATUS_PESANAN, default='proses')
     jumlah_item = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return f"Meja {self.nomor_meja} - {self.nama_pelanggan or 'Anonim'}"
+
+    def total_harga(self):
+        return sum([item.subtotal() for item in self.item_pesanan.all()])
 
 class ItemPesanan(models.Model):
     pemesanan = models.ForeignKey(Pemesanan, on_delete=models.CASCADE, related_name='item_pesanan')

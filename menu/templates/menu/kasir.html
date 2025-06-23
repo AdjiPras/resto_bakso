@@ -1,24 +1,125 @@
 {% extends 'menu/base.html' %}
 {% block content %}
-<h1>Kasir - Transaksi Belum Dibayar</h1>
-<table border="1">
-    <tr>
-        <th>Meja</th>
-        <th>Nama</th>
-        <th>Total</th>
-        <th>Aksi</th>
-    </tr>
+<h1>Kasir - Transaksi</h1>
+
+<style>
+.card-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.card {
+    position: relative;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 1rem;
+    width: 260px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    transition: transform 0.2s ease;
+}
+
+.card:hover {
+    transform: scale(1.02);
+}
+
+.card h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.2rem;
+}
+
+.card p {
+    margin: 0.3rem 0;
+}
+
+.button-link {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background-color: #007bff;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    margin-top: 0.5rem;
+    transition: background-color 0.3s ease;
+}
+
+.button-link:hover {
+    background-color: #0056b3;
+}
+
+.button-validate {
+    display: inline-block;
+    padding: 0.4rem 1rem;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    margin-top: 0.4rem;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+}
+
+.button-validate:hover {
+    background-color: #218838;
+}
+
+.badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 0.3rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: white;
+}
+
+.badge.bayar {
+    background-color: #28a745;
+}
+
+.badge.belum {
+    background-color: #dc3545;
+}
+</style>
+
+<div class="card-container">
     {% for pesanan in pesanan_list %}
-    <tr>
-        <td>{{ pesanan.nomor_meja }}</td>
-        <td>{{ pesanan.nama_pelanggan }}</td>
-        <td>
-            Rp {{ pesanan.total }}
-        </td>
-        <td>
-            <a href="{% url 'detail_pemesanan' pesanan.id %}">Detail & Bayar</a>
-        </td>
-    </tr>
+    <div class="card">
+        {% if pesanan.sudah_dibayar %}
+            <div class="badge bayar">Sudah Dibayar</div>
+        {% else %}
+            <div class="badge belum">Belum Dibayar</div>
+        {% endif %}
+
+        <h3>Meja {{ pesanan.nomor_meja }}</h3>
+        <p><strong>Nama:</strong> {{ pesanan.nama_pelanggan }}</p>
+        <p><strong>Total:</strong> Rp {{ pesanan.total }}</p>
+
+        <a href="{% url 'detail_pemesanan' pesanan.id %}" class="button-link">Detail & Bayar</a>
+
+        {% if not pesanan.sudah_dibayar %}
+            <button class="button-validate" onclick="validasiPembayaran({{ pesanan.id }})">
+                Validasi Pembayaran
+            </button>
+            <form id="form-validasi-{{ pesanan.id }}" method="post" action="{% url 'bayar_pemesanan' pesanan.id %}" style="display: none;">
+                {% csrf_token %}
+            </form>
+        {% endif %}
+    </div>
     {% endfor %}
-</table>
+</div>
+
+<script>
+function validasiPembayaran(pesananId) {
+    if (confirm("Yakin ingin memvalidasi pembayaran pesanan ini?")) {
+        document.getElementById("form-validasi-" + pesananId).submit();
+    }
+}
+</script>
 {% endblock %}

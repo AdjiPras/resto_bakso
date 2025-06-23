@@ -16,6 +16,7 @@ from django.db.models import F, ExpressionWrapper, DecimalField
 from django.core.paginator import Paginator
 
 
+
 def dapur_view(request):
     daftar_pesanan = Pemesanan.objects.all().order_by('-id')  # contoh: ambil semua pesanan
     context = {'daftar_pesanan': daftar_pesanan}
@@ -289,13 +290,19 @@ def bayar_pemesanan(request, pesanan_id):
 
 # Menu kasir: tampilkan semua yang belum dibayar
 def kasir_view(request):
-    pesanan_list = Pemesanan.objects.filter(sudah_dibayar=False)
+    pesanan_list = Pemesanan.objects.all().order_by('-tanggal_pesan')  # tampilkan semua
+
     for p in pesanan_list:
-        total = p.item_pesanan.aggregate(
-            total=Sum('menu__harga')
-        )['total']
-        p.total = sum([item.subtotal() for item in p.item_pesanan.all()])
+        p.total = p.total_harga()
 
     return render(request, 'menu/kasir.html', {
         'pesanan_list': pesanan_list
     })
+
+def bayar_pemesanan(request, pesanan_id):
+    pesanan = get_object_or_404(Pemesanan, id=pesanan_id)
+    if request.method == 'POST':
+        pesanan.sudah_dibayar = True
+        pesanan.status = 'selesai'
+        pesanan.save()
+    return redirect('kasir_view')
